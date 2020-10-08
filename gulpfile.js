@@ -12,6 +12,7 @@ const plumber = require("gulp-plumber");
 const rename = require("gulp-rename");
 const sass = require("gulp-sass");
 const uglify = require("gulp-uglify");
+const template = require("gulp-template");
 
 // Load package.json for banner
 const pkg = require('./package.json');
@@ -24,6 +25,24 @@ const banner = ['/*!\n',
   ' */\n',
   '\n'
 ].join('');
+
+// Redirects
+const links = {
+  github: 'https://github.com/aniruddhavpatil',
+  linkedin: 'https://www.linkedin.com/in/aniruddhavpatil',
+}
+
+const redirectLinkTasks = [];
+Object.keys(links).map((key) => {
+  const taskName = `redirect-${key}`;
+  gulp.task(taskName, () => gulp.src('./templates/redirect/index.html')
+    .pipe(template({
+      url: links[key],
+    }))
+    .pipe(gulp.dest(`./${key}`)));
+
+  redirectLinkTasks.push(taskName);
+});
 
 // BrowserSync
 function browserSync(done) {
@@ -122,7 +141,7 @@ function watchFiles() {
 
 // Define complex tasks
 const vendor = gulp.series(clean, modules);
-const build = gulp.series(vendor, gulp.parallel(css, js));
+const build = gulp.series(vendor, gulp.parallel(css, js, ...redirectLinkTasks));
 const watch = gulp.series(build, gulp.parallel(watchFiles, browserSync));
 
 // Export tasks
